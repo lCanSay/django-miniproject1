@@ -1,0 +1,24 @@
+{% extends 'blog/base_layout.html' %}
+
+
+{% block content %}
+    <title>Post Details</title>
+    <h1>{{ post.title }}</h1>
+    <p>{{ post.content }}</p>
+    <h6>By <a href="#">{{ post.author.username }}</a> on {{ post.created_at }}</h6>
+
+    <h2>Comments</h2>
+    <div class="comments">
+        {% if comments %}
+            {% for comment in comments %}
+                <div class="comment">
+                    <h6>By <a href="#">{{ comment.author.username }}</a> on {{ comment.created_at }}</h6>
+                    <p>{{ comment.content }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No comments yet.</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
