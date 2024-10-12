@@ -1,9 +1,11 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileUpdateForm
-from .models import Profile
+from .models import Profile, Follow
+from django.contrib.auth.models import User
+
 
 
 # Create your views here.
@@ -36,21 +38,43 @@ def logout_view(request):
     
 
 @login_required
-def profile_view(request):
-    user = request.user
+def profile_view(request, username):
+    user = get_object_or_404(User, username=username)
+
     if not hasattr(user, 'profile'):
         Profile.objects.create(user=user)
 
-    if request.method == 'POST':
-        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=user.profile)
-        if profile_form.is_valid():
-            profile_form.save()
-            return redirect('profile')
-    else:
-        profile_form = ProfileUpdateForm(instance=user.profile)
+    user_profile = get_object_or_404(Profile, user__username=username)
+    is_own_profile = request.user == user_profile.user
 
+    followers = Follow.objects.filter(following=user_profile.user)
+    following = Follow.objects.filter(follower=user_profile.user)
+    is_following = followers.filter(follower=request.user).exists()
+
+    if request.method == 'POST' :
+        if is_own_profile:
+            profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=user_profile)
+            if profile_form.is_valid():
+                profile_form.save()
+                return redirect('profile', username=request.user.username)
+
+        else:
+            if 'follow' in request.POST:
+                Follow.objects.get_or_create(follower=request.user, following=user_profile.user)
+            elif 'unfollow' in request.POST:
+                Follow.objects.filter(follower=request.user, following=user_profile.user).delete()
+            return redirect('profile', username=username)
+
+    else:
+        profile_form = ProfileUpdateForm(instance=user.profile) if is_own_profile else None
+
+    
     return render(request, 'users/profile.html', {
-        'profile': user.profile,
-        'profile_form': profile_form
+        'profile': user_profile,
+        'profile_form': profile_form,
+        'is_own_profile': is_own_profile,
+        'is_following': is_following,
+        'followers_count': followers.count(),
+        'following_count': following.count(),
     })
 

@@ -14,16 +14,30 @@
         <p><strong>Bio:</strong> {{ profile.bio }}</p>
     </div>
 
+    <p><strong>Followers:</strong> {{ followers_count }}</p>
+    <p><strong>Following:</strong> {{ following_count }}</p>
 
-    <h2>Update Profile</h2>
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ profile_form.as_p }}
-        <button type="submit">Save Changes</button>
-    </form>
 
-    <form method="POST" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-    </form>
+    {% if not is_own_profile %}
+        <form method="POST">
+            {% csrf_token %}
+            {% if is_following %}
+                <button type="submit" name="unfollow">Unfollow</button>
+            {% else %}
+                <button type="submit" name="follow">Follow</button>
+            {% endif %}
+        </form>
+    {% else %}
+        <h2>Update Profile</h2>
+        <form method="POST" action="{% url 'profile' username=request.user.username %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ profile_form.as_p }}
+            <button type="submit">Save Changes</button>
+        </form>
+
+        <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+    {% endif %}
 {% endblock %}

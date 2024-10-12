@@ -9,16 +9,11 @@
         <link rel="stylesheet" href="{% static 'blog/css/style.css' %}"> 
     </head>
     <body>
-        {% comment %} <nav>
-            <ul>
-                <li>
-                    <form class = "logout-link" action = "{% url 'users:logout'%}" method = "post">
-                        {% csrf_token %}
-                        <button type = "submit">Logout</button>
-                    </form>
-                </li>
-            </ul>
-        </nav> {% endcomment %}
+        <nav>
+            <a href="{% url 'profile' request.user.username %}">Profile</a>
+            <a href="{% url 'postapp:create_post' %}">Make a Post</a>
+        </nav>
+    
         <div class = "wrapper"> 
             {% block content %}
             {% endblock %}
