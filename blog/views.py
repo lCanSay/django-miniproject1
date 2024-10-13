@@ -3,14 +3,30 @@ from django.http import HttpResponse
 from .models import Post, Comment
 from django.contrib.auth.decorators import login_required
 from .forms import PostForm, CommentForm
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 
 # Create your views here.
 def index(request):
     return render(request, 'blog/index.html')
 
 def listall(request):
-    posts = Post.objects.all().order_by('-created_at')
-    return render(request, 'blog/post_list.html', {'posts': posts})
+    query = request.GET.get('q', '')
+    posts = Post.objects.filter(
+        Q(title__icontains=query) | Q(content__icontains=query)).order_by('-created_at')
+
+    paginator = Paginator(posts, 5)
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query
+    }
+    return render(request, 'blog/post_list.html', context)
+
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)

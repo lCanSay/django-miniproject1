@@ -12,6 +12,12 @@
         <nav>
             <a href="{% url 'profile' request.user.username %}">Profile</a>
             <a href="{% url 'postapp:create_post' %}">Make a Post</a>
+
+            <form method="GET" action="{% url 'postapp:listofposts' %}" style="display: inline;">
+                <input type="text" name="q" placeholder="Search posts..." value="{{ request.GET.q|default_if_none:'' }}">
+                <button type="submit">Search</button>
+            </form>
+    
         </nav>
     
         <div class = "wrapper"> 
